@@ -1,9 +1,9 @@
-'use client'
+﻿"use client"
 
-import { useState } from 'react'
-import Image from 'next/image'
-import Navigation from '@/components/Navigation'
-import ContactModal from '@/components/ContactModal'
+import { useState } from "react"
+import Image from "next/image"
+import Navigation from "@/components/Navigation"
+import ContactModal from "@/components/ContactModal"
 
 export default function OldSana() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -67,7 +67,6 @@ export default function OldSana() {
                 <p className="text-lg text-foreground/70 leading-relaxed mb-6">
                  The main difference between sana and Dharma Chavadi is that there is no muguli in Dharma chavadi it is represented as a house(Arasu mane), also it dosent have bali during festivals which was followed when there was sana.
                 </p>
-                
               </div>
 
               <div className="grid grid-cols-2 gap-6">
@@ -99,10 +98,6 @@ export default function OldSana() {
                   <span>Sacred sanctuary for spiritual pilgrims and devotees</span>
                 </li>
               </ul>
-
-              <button className="rounded-full bg-primary px-8 py-3 font-medium text-primary-foreground transition hover:shadow-lg hover:shadow-primary/30">
-                Learn More About Our History
-              </button>
             </div>
           </div>
         </div>
@@ -145,7 +140,7 @@ export default function OldSana() {
         <div className="mx-auto max-w-2xl px-4 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-primary mb-6">Plan Your Visit</h2>
           <p className="text-lg text-foreground/70 mb-8">
-            Experience the spirituality of DHARMA CHAVADI and to connect with us just click the button below.
+            Experience the spiritual majesty of Old Sana and connect with centuries of sacred heritage.
           </p>
           <button
             onClick={() => setIsModalOpen(true)}

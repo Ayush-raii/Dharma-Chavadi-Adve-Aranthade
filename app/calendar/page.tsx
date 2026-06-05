@@ -1,9 +1,8 @@
-'use client'
+﻿"use client"
 
-import { useState, useMemo } from 'react'
-import Navigation from '@/components/Navigation'
-import AdminLoginModal from '@/components/AdminLoginModal'
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useMemo, useEffect } from "react"
+import Navigation from "@/components/Navigation"
+import { Plus, ChevronLeft, ChevronRight } from "lucide-react"
 
 interface SpecialDay {
   date: string
@@ -11,22 +10,66 @@ interface SpecialDay {
 }
 
 export default function Calendar() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 5)) // June 2026
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 5))
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [isAdminMode, setIsAdminMode] = useState(false)
-  const [eventName, setEventName] = useState('')
-  const [eventDate, setEventDate] = useState('')
+  const [eventName, setEventName] = useState("")
+  const [eventDate, setEventDate] = useState("")
   const [specialDays, setSpecialDays] = useState<SpecialDay[]>([
-    { date: '2026-06-04', eventName: 'Sacred Festival' },
-    { date: '2026-06-15', eventName: 'Spiritual Gathering' },
-    { date: '2026-06-20', eventName: 'Divine Celebration' },
+    { date: "2026-06-04", eventName: "Sacred Festival" },
+    { date: "2026-06-15", eventName: "Spiritual Gathering" },
+    { date: "2026-06-20", eventName: "Divine Celebration" },
   ])
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loginError, setLoginError] = useState("")
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("calendarEvents")
+    if (saved) {
+      setSpecialDays(JSON.parse(saved))
+    }
+  }, [])
+
+  // Save to localStorage whenever specialDays changes
+  useEffect(() => {
+    localStorage.setItem("calendarEvents", JSON.stringify(specialDays))
+  }, [specialDays])
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoginError("")
+
+    // Simple validation - you can replace with backend call
+    if (!email.trim() || !password.trim()) {
+      setLoginError("Please enter email and password")
+      return
+    }
+
+    if (!email.includes("@")) {
+      setLoginError("Please enter a valid email")
+      return
+    }
+
+    // For now, simple check - replace with backend authentication
+    if (password.length < 6) {
+      setLoginError("Password must be at least 6 characters")
+      return
+    }
+
+    // Login successful
+    setIsLoginOpen(false)
+    setIsAdminMode(true)
+    setEmail("")
+    setPassword("")
+  }
 
   const handleAddEvent = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!eventName.trim() || !eventDate) {
-      alert('Please fill in all fields')
+      alert("Please fill in all fields")
       return
     }
 
@@ -36,24 +79,20 @@ export default function Calendar() {
     }
 
     setSpecialDays([...specialDays, newSpecialDay])
-    setEventName('')
-    setEventDate('')
+    setEventName("")
+    setEventDate("")
+  }
+
+  const handleLogout = () => {
     setIsAdminMode(false)
-  }
-
-  const handleAdminLoginSuccess = () => {
-    setIsLoginOpen(false)
-    setIsAdminMode(true)
-  }
-
-  const handleAddEventClick = () => {
-    setIsLoginOpen(true)
+    setEventName("")
+    setEventDate("")
   }
 
   // Calendar calculations
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
-  const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })
+  const monthName = currentDate.toLocaleString("default", { month: "long", year: "numeric" })
 
   const calendarDays = useMemo(() => {
     const days = []
@@ -68,7 +107,7 @@ export default function Calendar() {
 
   const isSpecialDay = (day: number | null): SpecialDay | undefined => {
     if (!day) return undefined
-    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
     return specialDays.find(sd => sd.date === dateStr)
   }
 
@@ -80,7 +119,7 @@ export default function Calendar() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
   }
 
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
   return (
     <main className="overflow-hidden">
@@ -98,140 +137,190 @@ export default function Calendar() {
         </div>
       </section>
 
-      {/* Add Event Button */}
-      {!isAdminMode && (
-        <section className="py-8 bg-background border-b border-border">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <button
-              onClick={handleAddEventClick}
-              className="flex items-center gap-2 rounded-lg bg-secondary px-6 py-3 font-medium text-background transition hover:shadow-lg hover:shadow-secondary/50"
-            >
-              <Plus size={20} />
-              Add New Event / Special Day
-            </button>
-          </div>
-        </section>
-      )}
+      {/* Calendar Section */}
+      <section className="py-20 sm:py-32 bg-background">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          {/* Add Event Section */}
+          {!isAdminMode && (
+            <div className="mb-8 text-center">
+              <button
+                onClick={() => setIsLoginOpen(true)}
+                className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-background transition hover:shadow-lg hover:shadow-primary/30 mx-auto"
+              >
+                <Plus size={20} />
+                Add Event to Calendar
+              </button>
+            </div>
+          )}
 
-      {/* Admin Add Event Form */}
-      {isAdminMode && (
-        <section className="py-8 bg-secondary/10 border-b border-secondary/20">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-xl bg-background p-6 border border-secondary/20">
-              <h3 className="text-xl font-bold text-primary mb-6">Add Special Religious Day/Event</h3>
-              
+          {/* Login Modal */}
+          {isLoginOpen && !isAdminMode && (
+            <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+              <div className="bg-background rounded-xl shadow-2xl max-w-md w-full p-8">
+                <h2 className="text-2xl font-bold text-primary mb-6">Admin Login</h2>
+
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      className="w-full px-4 py-2 rounded-lg border border-border bg-background/50 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="w-full px-4 py-2 rounded-lg border border-border bg-background/50 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+
+                  {loginError && (
+                    <p className="text-red-500 text-sm">{loginError}</p>
+                  )}
+
+                  <div className="flex gap-3">
+                    <button
+                      type="submit"
+                      className="flex-1 rounded-lg bg-primary px-4 py-2 font-medium text-background transition hover:shadow-lg"
+                    >
+                      Login
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsLoginOpen(false)
+                        setLoginError("")
+                        setEmail("")
+                        setPassword("")
+                      }}
+                      className="flex-1 rounded-lg border border-border px-4 py-2 font-medium text-foreground transition hover:bg-muted"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Admin Add Event Form */}
+          {isAdminMode && (
+            <div className="mb-8 p-6 rounded-xl bg-secondary/10 border border-secondary/20">
+              <h3 className="text-xl font-bold text-primary mb-4">Add New Event</h3>
+
               <form onSubmit={handleAddEvent} className="space-y-4">
                 <div>
-                  <label htmlFor="eventName" className="block text-sm font-medium text-foreground mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Event Name
                   </label>
                   <input
-                    id="eventName"
                     type="text"
                     value={eventName}
                     onChange={(e) => setEventName(e.target.value)}
-                    placeholder="e.g., Sacred Festival, Spiritual Gathering, Holy Celebration"
-                    className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground placeholder-foreground/40 focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition"
+                    placeholder="Enter event name"
+                    className="w-full px-4 py-2 rounded-lg border border-border bg-background px-4 py-2 text-foreground placeholder-foreground/40 focus:border-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="eventDate" className="block text-sm font-medium text-foreground mb-2">
-                    Date
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Event Date
                   </label>
                   <input
-                    id="eventDate"
                     type="date"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition"
+                    className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:border-primary focus:outline-none"
                   />
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                   <button
                     type="submit"
-                    className="rounded-lg bg-secondary px-6 py-2 font-medium text-background transition hover:shadow-lg hover:shadow-secondary/30"
+                    className="flex-1 rounded-lg bg-primary px-4 py-2 font-medium text-background transition hover:shadow-lg"
                   >
                     Add Event
                   </button>
                   <button
                     type="button"
-                    onClick={() => setIsAdminMode(false)}
-                    className="rounded-lg border border-border px-6 py-2 font-medium text-foreground transition hover:bg-muted"
+                    onClick={handleLogout}
+                    className="flex-1 rounded-lg border border-border px-4 py-2 font-medium text-foreground transition hover:bg-muted"
                   >
-                    Close
+                    Logout
                   </button>
                 </div>
               </form>
             </div>
-          </div>
-        </section>
-      )}
+          )}
 
-      {/* Calendar Section */}
-      <section className="py-20 sm:py-32 bg-background">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          {/* Calendar Header */}
-          <div className="rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/10 p-8 border border-secondary/30">
+          {/* Calendar */}
+          <div className="rounded-xl bg-white/5 border border-border p-6">
             {/* Month Navigation */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-6">
               <button
                 onClick={previousMonth}
-                className="rounded-lg p-2 text-primary hover:bg-secondary/20 transition"
-                aria-label="Previous month"
+                className="p-2 rounded-lg hover:bg-secondary/20 transition"
               >
                 <ChevronLeft size={24} />
               </button>
-              
-              <h2 className="text-3xl font-bold text-primary font-serif">{monthName}</h2>
-              
+              <h2 className="text-2xl font-bold text-primary">{monthName}</h2>
               <button
                 onClick={nextMonth}
-                className="rounded-lg p-2 text-primary hover:bg-secondary/20 transition"
-                aria-label="Next month"
+                className="p-2 rounded-lg hover:bg-secondary/20 transition"
               >
                 <ChevronRight size={24} />
               </button>
             </div>
 
-            {/* Week Days Header */}
-            <div className="grid grid-cols-7 gap-2 mb-2">
+            {/* Weekday Headers */}
+            <div className="grid grid-cols-7 gap-2 mb-4">
               {weekDays.map((day) => (
                 <div
                   key={day}
-                  className="text-center font-semibold text-sm text-primary/70 py-2"
+                  className="text-center font-bold text-primary text-sm py-2"
                 >
                   {day}
                 </div>
               ))}
             </div>
 
-            {/* Calendar Days Grid */}
+            {/* Calendar Days */}
             <div className="grid grid-cols-7 gap-2">
               {calendarDays.map((day, index) => {
-                const specialDay = day ? isSpecialDay(day) : undefined
-                
+                const special = day ? isSpecialDay(day) : undefined
+
                 return (
                   <div
                     key={index}
-                    className={`aspect-square p-2 rounded-lg text-center text-sm font-medium transition ${
-                      day === null
-                        ? 'bg-transparent'
-                        : specialDay
-                        ? 'bg-secondary/80 text-background hover:bg-secondary border-2 border-secondary shadow-md'
-                        : 'bg-muted text-foreground hover:bg-muted/80 border border-border'
+                    className={`p-3 rounded-lg text-center text-sm h-24 flex flex-col items-center justify-center transition ${
+                      day
+                        ? special
+                          ? "bg-secondary/30 border-2 border-secondary"
+                          : "bg-background/50 border border-border hover:border-primary"
+                        : "bg-transparent"
                     }`}
                   >
                     {day && (
-                      <div>
-                        <div className="text-lg font-bold">{day}</div>
-                        {specialDay && (
-                          <div className="text-xs mt-1 line-clamp-2 leading-tight">
-                            {specialDay.eventName}
-                          </div>
+                      <>
+                        <span className="font-bold text-foreground">{day}</span>
+                        {special && (
+                          <span className="text-xs text-secondary font-semibold mt-1 text-center line-clamp-2">
+                            {special.eventName}
+                          </span>
                         )}
-                      </div>
+                      </>
                     )}
                   </div>
                 )
@@ -239,76 +328,36 @@ export default function Calendar() {
             </div>
           </div>
 
-          {/* Legend */}
-          <div className="mt-8 flex flex-col sm:flex-row gap-6 justify-center">
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded bg-secondary/80 border-2 border-secondary"></div>
-              <span className="text-sm text-foreground">Special Event/Holy Day</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded bg-muted border border-border"></div>
-              <span className="text-sm text-foreground">Regular Day</span>
-            </div>
-          </div>
-
           {/* Events List */}
           {specialDays.length > 0 && (
-            <div className="mt-12">
-              <h3 className="text-2xl font-bold text-primary mb-6 font-serif">Upcoming Sacred Events</h3>
+            <div className="mt-8">
+              <h3 className="text-xl font-bold text-primary mb-4">Upcoming Events</h3>
               <div className="space-y-3">
-                {specialDays.map((event, index) => {
-                  const eventDate = new Date(event.date)
-                  const formattedDate = eventDate.toLocaleDateString('default', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })
-                  
-                  return (
+                {specialDays
+                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                  .map((event, index) => (
                     <div
                       key={index}
-                      className="p-4 rounded-lg bg-secondary/10 border border-secondary/20 hover:border-secondary/40 transition"
+                      className="p-4 rounded-lg bg-secondary/10 border border-secondary/20 flex justify-between items-center"
                     >
-                      <div className="flex items-start gap-4">
-                        <div className="w-3 h-3 rounded-full bg-secondary mt-1.5 flex-shrink-0"></div>
-                        <div className="flex-grow">
-                          <h4 className="font-semibold text-primary">{event.eventName}</h4>
-                          <p className="text-sm text-foreground/70">{formattedDate}</p>
-                        </div>
+                      <div>
+                        <p className="font-semibold text-primary">{event.eventName}</p>
+                        <p className="text-sm text-foreground/70">
+                          {new Date(event.date).toLocaleDateString("en-US", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
                       </div>
                     </div>
-                  )
-                })}
+                  ))}
               </div>
             </div>
           )}
         </div>
       </section>
-
-      {/* Call to Action */}
-      <section className="py-20 sm:py-32 bg-gradient-to-r from-primary/20 to-secondary/20 border-t border-border">
-        <div className="mx-auto max-w-2xl px-4 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-primary mb-6">Explore Our Heritage</h2>
-          <p className="text-lg text-foreground/70 mb-8">
-            Discover the history of our sacred temple and view our gallery of spiritual moments.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/oldsana" className="rounded-full bg-secondary px-8 py-3 font-medium text-background transition hover:shadow-lg hover:shadow-secondary/50">
-              Old Sana History
-            </a>
-            <a href="/gallery" className="rounded-full border-2 border-primary px-8 py-3 font-medium text-primary transition hover:bg-primary/5">
-              View Gallery
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <AdminLoginModal
-        isOpen={isLoginOpen}
-        onClose={() => setIsLoginOpen(false)}
-        onSuccess={handleAdminLoginSuccess}
-        title="Festival Calendar Admin Login"
-      />
     </main>
   )
 }
